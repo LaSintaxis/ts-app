@@ -69,13 +69,13 @@ const HomeScreen: React.FC = () => {
                 totalUsers: userCount,
                 totalCategories: categoriesResponse.success && categoriesResponse.data && Array.isArray(categoriesResponse.data) ? categoriesResponse.data.length : 0,
 
-                totalSubcategories: subcategoriesResponse.success && subcategoriesResponse.data && Array.isArray(subcategoriesResponse.data) ? subcategoriesResponse.data.length : 0;
+                totalSubcategories: subcategoriesResponse.success && subcategoriesResponse.data && Array.isArray(subcategoriesResponse.data) ? subcategoriesResponse.data.length : 0,
 
-                totalProducts: productsResponse.success && productsResponse.data && Array.isArray(productsResponse.data) ? productsResponse.data.length : 0;
+                totalProducts: productsResponse.success && productsResponse.data && Array.isArray(productsResponse.data) ? productsResponse.data.length : 0
             })
 
         } catch (error) {
-            console.warn('[screens/HomeScreenn.tsx] Error cargando estadisticas: ', error);
+            console.warn('[screens/HomeScreen.tsx] Error cargando estadisticas: ', error);
             Alert.alert('Error', 'No se pudieron cargar las estadisticas')
         } finally {
             setIsLoading(false);
@@ -106,15 +106,151 @@ const HomeScreen: React.FC = () => {
         value: number;
         color: string;
         iconName: string;
-    }> = ({ title, value, color, iconName }) => {
+    }> = ({ title, value, color, iconName }) => (
         <View style={[globalStyles.homeCard, { borderLeftColor: color, borderLeftWidth: 4 }]}>
             <View style={globalStyles.homeCardHeader}>
-                {/**icinis vectoriales dinamicos */}
+                {/**iconos vectoriales dinamicos */}
                 <Ionicons name={iconName as any} size={24} color={color} style={globalStyles.homeCardIcon} />
-                <Text style={[globalStyles.homeCardTitle, { color }]}>{title}</Text>
+                <Text style={globalStyles.homeCardTitle}>{title}</Text>
                 <Text style={[globalStyles.homeCardValue, { color }]}>{value}</Text>
             </View>
         </View>
+    )
+    //botones interactivos
+    const QuickActionButton: React.FC<{
+        title: string;
+        iconName: string;
+        onPress: () => void;
+        color?: string;
+    }> = ({ title, iconName, onPress, color = colors.primary }) => (
+        <TouchableOpacity
+            style={[globalStyles.homeActionButton, {
+                borderColor: color
+            }]}
+            onPress={onPress}
+        >
+            {/**color personalizable segun el tipo de accion */}
+            <Ionicons name={iconName as any} size={20} color={color} style={globalStyles.homeActionIcon} />
+            <Text style={[globalStyles.homeActionTitle, { color }]}>{title}</Text>
+        </TouchableOpacity>
+    );
+    if (isLoading) {
+        return (
+            <View style={globalStyles.loadingContainer}>
+                <Text style={globalStyles.loadingText}>Cargando dashboard</Text>
+            </View>
+        );
     }
+    return (
+        <ScrollView
+            style={globalStyles.container}
+            refreshControl={
+                <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                    colors={[colors.primary]}
+                />
+            }
+        >
+            {/**header */}
+            <View style={globalStyles.homeHeader}>
+                <View>
+                    <Text style={globalStyles.userWelcomeText}>¡Hola</Text>
+                    <Text style={globalStyles.userName}>{user?.email || 'Usuario'}</Text>
+                    <Text style={globalStyles.userRole}>{user?.role === 'admin' ? 'Administrador' : 'Coordinador'}</Text>
+                </View>
+                <TouchableOpacity
+                    style={globalStyles.logoutButton}
+                    onPress={handleLogout}
+                >
+                    <Text style={globalStyles.logoutButtonText}>Salir</Text>
+                </TouchableOpacity>
+            </View>
+            {/**Estadisticas */}
+            <View style={globalStyles.homeSection}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+                    <Ionicons name="bar-chart" size={24} color={colors.primary} style={{ marginRight: spacing.xs }} />
+                    <Text style={globalStyles.homeSectionTitle}>Resumen</Text>
+                </View>
+                <View style={globalStyles.homeGrid}>
+                    {hasRole('admin') && (
+                        <StatCard
+                            title="Usuarios"
+                            value={stats.totalUsers}
+                            color={colors.admin}
+                            iconName="people"
+                        />
+                    )}
+                    <StatCard
+                        title="Categorias"
+                        value={stats.totalCategories}
+                        color={colors.secondary}
+                        iconName="folder"
+                    />
+                    <StatCard
+                        title="Subcategorias"
+                        value={stats.totalSubcategories}
+                        color={colors.Coordinador}
+                        iconName="albums"
+                    />
+                    <StatCard
+                        title="Productos"
+                        value={stats.totalProducts}
+                        color={colors.accent}
+                        iconName="cube"
+                    />
+                </View>
+            </View>
+            {/**Acciones rapidas */}
+            <View style={globalStyles.homeSection}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+                    <Ionicons name='flash' size={24} color={colors.primary} style={{ marginRight: spacing.xs }} />
+                    <Text style={globalStyles.homeSectionTitle}>Acciones rápidas</Text>
+                    <View style={globalStyles.homeGrid}>
+                        {hasRole('admin') && (
+                            <QuickActionButton
+                                title='Gestión de Usuarios'
+                                iconName="people"
+                                onPress={() => navigation.navigate('Users' as never)}
+                                color={colors.admin}
+                            />
+                        )}
+                        <QuickActionButton
+                            title='Ver categorías'
+                            iconName="folder"
+                            onPress={() => navigation.navigate('Categories' as never)}
+                            color={colors.secondary}
+                        />
+                        <QuickActionButton
+                            title='Ver subcategorías'
+                            iconName="albums"
+                            onPress={() => navigation.navigate('Subcategories' as never)}
+                            color={colors.Coordinador}
+                        />
+                        <QuickActionButton
+                            title='Ver productos'
+                            iconName="cube"
+                            onPress={() => navigation.navigate('Products' as never)}
+                            color={colors.accent}
+                        />
+                    </View>
+                    {/**Informacion del sistema */}
+                    <View style={globalStyles.homeSection}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+                            <Ionicons name="information-circle" size={24} color={colors.primary} style={{ marginRight: spacing.xs }} />
+                            <Text style={globalStyles.homeSectionTitle}>Información</Text>
+                        </View>
+                        <View style={globalStyles.homeInfoCard}>
+                            <Text style={globalStyles.homeInfoText}>Bienvenido al sistema de Gestión. Aquí puedes administrar {hasRole('admin') ? 'Usuarios' : ""} Categorías, Subcategorías y Productos</Text>
+                            <Text style={globalStyles.homeInfoSubtext}>
+                                Desliza hacia abajo para actualizar los datos
+                            </Text>
+                        </View>
+                    </View>
 
+                </View>
+            </View>
+        </ScrollView>
+    )
 }
+export default HomeScreen
