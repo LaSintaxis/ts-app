@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Alert, Modal, TextInput, RefreshControl, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext'
 import { apiService } from '../services/api';
 import { Category } from '../types'
@@ -111,7 +112,7 @@ const CategoriesScreen: React.FC = () => {
             }
         } catch (error: any) {
             if (__DEV__) {
-                console.log('Error en eliminación ', error);
+                console.log('[screens/CategoriesScreen.tsx] Error en eliminación ', error);
             }
             //manejo especifico para el error de subcategorias asociadas
             const errorMessage = error.message || '';
@@ -154,13 +155,13 @@ const CategoriesScreen: React.FC = () => {
                 Alert.alert('Exito', response.message || 'Estado de categoria actualizado correctamente');
                 loadCategories();
             }
-        } catch (error:any){
+        } catch (error: any) {
             Alert.alert('Error', error.message || '[screens/CategoriesScreen.tsx] Error al cambiar el estado de la categoría')
         } finally {
             setIsLoading(false)
         }
     }
-    const CategoryCard: React.FC <{ category: Category}> = ({category}) => {
+    const CategoryCard: React.FC<{ category: Category }> = ({ category }) => {
         console.log('Category data: ', {
             name: category.name,
             isActive: category.isActive,
@@ -171,18 +172,173 @@ const CategoriesScreen: React.FC = () => {
                 componentStyles.baseCard,
                 !category.isActive && componentStyles.cardInactive
             ]}>
-                <View style={componentStyles.cardHeader}></View>
-                <View style={componentStyles.cardInfo}></View>
-                <View style={componentStyles.titleRow}>
-                    <Text style={[
-                        componentStyles.cardTitle,
-                        !category.isActive && componentStyles.cardTitleInactive
-                    ]}>{category.name}</Text>
-                    <View style={[
-                        
-                    ]}></View>
+                <View style={componentStyles.cardHeader}>
+                    <View style={componentStyles.cardInfo}>
+                        <View style={componentStyles.titleRow}>
+                            <Text style={[
+                                componentStyles.cardTitle,
+                                !category.isActive && componentStyles.cardTitleInactive
+                            ]}>{category.name}</Text>
+                            <View style={[
+                                componentStyles.statusBadge, category.isActive ? componentStyles.statusBadgeActive : componentStyles.statusBadgeInactive
+                            ]}>
+                                <Text style={[
+                                    componentStyles.statusBadgeText, category.isActive ? componentStyles.statusBadgeTextActive : componentStyles.statusBadgeTextInactive
+                                ]}>{category.isActive ? 'Activa' : 'Inactiva'}</Text>
+                            </View>
+                        </View>
+                        {category.description && (
+                            <Text style={[
+                                componentStyles.cardDescription, !category.isActive && componentStyles.cardDescriptionInactive
+                            ]}>
+                                {category.description}
+                            </Text>
+                        )}
+                        <Text style={componentStyles.cardDate}>
+                            Creada: {new Date(category.createdAt).toLocaleDateString()}
+                        </Text>
+                    </View>
+                    <View style={componentStyles.cardActions}>
+                        <TouchableOpacity
+                            style={[componentStyles.toggleButton, category.isActive ? componentStyles.toggleButtonActive : componentStyles.toggleButtonInactive]}
+                            onPress={() => handleToggleStatus(category)}
+                        >
+                            <Text style={componentStyles.toggleButtonText}> {category.isActive ? 'Desactivar' : 'Activar'}</Text>
+                        </TouchableOpacity>
+                        {canEdit() && (
+                            <TouchableOpacity
+                                style={[componentStyles.actionButton, componentStyles.editButton]}
+                                onPress={() => openEditModal(category)}
+                            >
+                                <Ionicons name='create' size={18} color='white' />
+                            </TouchableOpacity>
+                        )}
+                        {canDelete() && (
+                            <TouchableOpacity
+                                style={[componentStyles.actionButton, componentStyles.deleteButton]}
+                                onPress={() => handleDelete(category)}
+                            >
+                                <Ionicons name='trash' size={18} color='white' />
+                            </TouchableOpacity>
+                        )}
+                    </View>
                 </View>
             </View>
         )
     }
+    if (isLoading && !isRefreshing) {
+        return (
+            <View style={globalStyles.loadingContainer}>
+                <ActivityIndicator size='large' color='#4ecdc4' />
+                <Text style={globalStyles.loadingText}>Cargando categorías</Text>
+            </View>
+        )
+    }
+    return (
+        <View style={globalStyles.screenContainer}>
+            <View style={globalStyles.screenHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="folder" size={24} color='white' style={{ marginRight: 0 }} />
+                    <Text style={globalStyles.headerTitle}>Categorías</Text>
+                </View>
+                {canEdit() && (
+                    <TouchableOpacity
+                        style={globalStyles.primaryButton}
+                        onPress={openCreateModal}
+                    >
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Ionicons name="add" size={24} color='white' style={{ marginRight: 0 }} />
+                            <Text style={globalStyles.primaryButtonText}>Agregar</Text>
+                        </View>
+                    </TouchableOpacity>
+                )}
+            </View>
+            <ScrollView 
+                style={globalStyles.screenContainer}
+                refreshControl={
+                    <RefreshControl 
+                        refreshing={isRefreshing}
+                        onRefresh={handleRefresh}
+                        colors={['#4ecdc4']}
+                    />
+                }
+            >
+                {categories.length === 0 ? (
+                    <View style={globalStyles.emptyStateContainer}>
+                        <Text style={globalStyles.titleText}>Categorías</Text>
+                        <Text style={globalStyles.emptyStateText}>No hay categorías</Text>
+                        <Text style={globalStyles.emptyStateSubtext}>
+                            {canEdit() ? 'Toca "Agregar" para crear la primera categoría' : 'No se han creado categorías aún'}
+                        </Text>
+                    </View>
+                ) : (
+                    categories.map((category) => (
+                        <CategoryCard key ={category._id} category={category}/>
+                    ))
+                )}
+            </ScrollView>
+            <Modal 
+                visible = {isModalVisible}
+                animationType="slide"
+                transparent = {true}
+                onRequestClose={closeModal}
+            >
+                <View style= {{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <View style={[globalStyles.card, {width:'100%', maxWidth: 400}]}>
+                        <View style={globalStyles.cardHeader}>
+                            <Text style={globalStyles.titleText}>
+                                {editingCategory ? 'Editar Categoria' : 'Nueva Categoría'}
+                            </Text>
+                            <TouchableOpacity
+                                style={globalStyles.dangerButton}
+                                onPress={closeModal}
+                            >
+                                <Text style={globalStyles.dangerButtonText}>X</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={globalStyles.inputContainer}>
+                            <Text style={globalStyles.inputLabel}>Nombre*</Text>
+                            <TextInput style={globalStyles.textInput} value={FormData.name} onChangeText={(value) => setFormData({...formData, name: value})} placeholder="Nombre de la categoría" placeholderTextColor="#999"/>
+                        </View>
+                        <View style={globalStyles.inputContainer}>
+                            <Text style={globalStyles.inputLabel}>Descripción*</Text>
+                            <TextInput style={[globalStyles.textInput, {height: 80, textAlignVertical: 'top'} ]} value={formData.description} onChangeText={(value) => setFormData({...formData, description: value})} placeholder="Descripció de la categoría opcional" placeholderTextColor="#999" multiline={true} numberOfLines={3}/>
+                        </View>
+                        <View style= {{flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 16}}>
+                            <TouchableOpacity
+                                style= {globalStyles.secondaryButton}
+                                onPress={closeModal}
+                            >
+                                <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style = {globalStyles.primaryButton}
+                                onPress={handleSave}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <ActivityIndicator
+                                        color='#fff'
+                                        size='small'
+                                    />
+                                ): (
+                                    <Text style={globalStyles.primaryButtonText}>
+                                        {editingCategory ? 'Actualizar' : 'Crear'}
+                                    </Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        </View>
+    )
 }
+
+export default CategoriesScreen;
