@@ -304,7 +304,7 @@ const CategoriesScreen: React.FC = () => {
                         </View>
                         <View style={globalStyles.inputContainer}>
                             <Text style={globalStyles.inputLabel}>Nombre*</Text>
-                            <TextInput style={globalStyles.textInput} value={FormData.name} onChangeText={(value) => setFormData({...formData, name: value})} placeholder="Nombre de la categoría" placeholderTextColor="#999"/>
+                            <TextInput style={globalStyles.textInput} value={formData.name} onChangeText={(value) => setFormData({...formData, name: value})} placeholder="Nombre de la categoría" placeholderTextColor="#999"/>
                         </View>
                         <View style={globalStyles.inputContainer}>
                             <Text style={globalStyles.inputLabel}>Descripción*</Text>

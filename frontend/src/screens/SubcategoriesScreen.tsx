@@ -341,38 +341,52 @@ const SubcategoriesScreen: React.FC = () => {
                                 <Text style={globalStyles.dangerButtonText}>X</Text>
                             </TouchableOpacity>
                         </View>
-                        <View style={globalStyles.inputContainer}>
-                            <Text style={globalStyles.inputLabel}>Nombre*</Text>
-                            <TextInput style={globalStyles.textInput} value={FormData.name} onChangeText={(value) => setFormData({ ...formData, name: value })} placeholder="Nombre de la categoría" placeholderTextColor="#999" />
-                        </View>
-                        <View style={globalStyles.inputContainer}>
-                            <Text style={globalStyles.inputLabel}>Descripción*</Text>
-                            <TextInput style={[globalStyles.textInput, { height: 80, textAlignVertical: 'top' }]} value={formData.description} onChangeText={(value) => setFormData({ ...formData, description: value })} placeholder="Descripció de la categoría opcional" placeholderTextColor="#999" multiline={true} numberOfLines={3} />
-                        </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 16 }}>
-                            <TouchableOpacity
-                                style={globalStyles.secondaryButton}
-                                onPress={closeModal}
-                            >
-                                <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={globalStyles.primaryButton}
-                                onPress={handleSave}
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <ActivityIndicator
-                                        color='#fff'
-                                        size='small'
-                                    />
-                                ) : (
-                                    <Text style={globalStyles.primaryButtonText}>
-                                        {editingCategory ? 'Actualizar' : 'Crear'}
-                                    </Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
+                        <ScrollView>
+                            <View style={globalStyles.inputContainer}>
+                                <Text style={globalStyles.inputLabel}>Categoría*</Text>
+                                <View style={[globalStyles.textInput, { paddingHorizontal: 0 }]}>
+                                    <Picker selectedValue={formData.categoryId} onValueChange={(value: string) => setFormData({ ...formData, categoryId: value })} style={{ color: '#333' }}>
+                                        <Picker.Item label="Selecciona una categoría" value="" />
+                                        {categories.map((category) => (
+                                            <Picker.Item key={category._id} label={category.name} value={category._id} />
+                                        ))}
+                                    </Picker>
+                                </View>
+                            </View>
+
+                            <View style={globalStyles.inputContainer}>
+                                <Text style={globalStyles.inputLabel}>Nombre*</Text>
+                                <TextInput style={globalStyles.textInput} value={formData.name} onChangeText={(value) => setFormData({ ...formData, name: value })} placeholder="Nombre de la subcategoría" placeholderTextColor="#999" />
+                            </View>
+                            <View style={globalStyles.inputContainer}>
+                                <Text style={globalStyles.inputLabel}>Descripción*</Text>
+                                <TextInput style={[globalStyles.textInput, { height: 80, textAlignVertical: 'top' }]} value={formData.description} onChangeText={(value) => setFormData({ ...formData, description: value })} placeholder="Descripción de la subcategoría opcional" placeholderTextColor="#999" multiline={true} numberOfLines={3} />
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 16 }}>
+                                <TouchableOpacity
+                                    style={globalStyles.secondaryButton}
+                                    onPress={closeModal}
+                                >
+                                    <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={globalStyles.primaryButton}
+                                    onPress={handleSave}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <ActivityIndicator
+                                            color='#fff'
+                                            size='small'
+                                        />
+                                    ) : (
+                                        <Text style={globalStyles.primaryButtonText}>
+                                            {editingSubcategory ? 'Actualizar' : 'Crear'}
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>
