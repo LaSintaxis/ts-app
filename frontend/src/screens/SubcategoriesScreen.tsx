@@ -302,7 +302,7 @@ const SubcategoriesScreen: React.FC = () => {
                     />
                 }
             >
-                {categories.length === 0 ? (
+                {subcategories.length === 0 ? (
                     <View style={globalStyles.emptyStateContainer}>
                         <Text style={globalStyles.titleText}>Subcategorías</Text>
                         <Text style={globalStyles.emptyStateText}>No hay subcategorías</Text>

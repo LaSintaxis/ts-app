@@ -432,7 +432,7 @@ const ProductsScreen: React.FC = () => {
         return (
             <View style={globalStyles.loadingContainer}>
                 <ActivityIndicator size='large' color='#4ecdc4' />
-                <Text style={globalStyles.loadingText}>Cargando subcategorías</Text>
+                <Text style={globalStyles.loadingText}>Cargando Productos</Text>
             </View>
         )
     }
@@ -440,8 +440,8 @@ const ProductsScreen: React.FC = () => {
         <View style={globalStyles.screenContainer}>
             <View style={globalStyles.screenHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons name="albums" size={24} color='white' style={{ marginRight: 0 }} />
-                    <Text style={globalStyles.headerTitle}>Subcategorías</Text>
+                    <Ionicons name="cube" size={24} color='white' style={{ marginRight: 0 }} />
+                    <Text style={globalStyles.headerTitle}>Productos</Text>
                 </View>
                 {canEdit() && (
                     <TouchableOpacity
@@ -465,50 +465,60 @@ const ProductsScreen: React.FC = () => {
                     />
                 }
             >
-                {categories.length === 0 ? (
+                {products.length === 0 ? (
                     <View style={globalStyles.emptyStateContainer}>
                         <Text style={globalStyles.titleText}>Subcategorías</Text>
                         <Text style={globalStyles.emptyStateText}>No hay subcategorías</Text>
                         <Text style={globalStyles.emptyStateSubtext}>
-                            {canEdit() ? 'Toca "Agregar" para crear la primera subcategoría' : 'No se han creado subcategorías aún'}
+                            {canEdit() ? 'Toca "Agregar" para crear el primer producto' : 'No se han creado productos aún'}
                         </Text>
                     </View>
                 ) : (
-                    subcategories.map((subcategory) => (
-                        <SubcategoryCard key={subcategory._id} subcategory={subcategory} />
+                    products.map((product) => (
+                        <ProductCard key={product._id} product={product} />
                     ))
                 )}
             </ScrollView>
-            <Modal
-                visible={isModalVisible}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={closeModal}
-            >
-                <View style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: 20
-                }}>
-                    <View style={[globalStyles.card, { width: '100%', maxWidth: 400 }]}>
-                        <View style={globalStyles.cardHeader}>
-                            <Text style={globalStyles.titleText}>
-                                {editingSubcategory ? 'Editar Subcategoria' : 'Nueva subcategoría'}
+            {isModalVisible && (
+                <View style={globalStyles.productsModalOverlay}>
+                    <View style={globalStyles.productsModalContent}>
+                        <View style={globalStyles.productsModalHeader}>
+                            <Text style={globalStyles.productsModalTitle}>
+                                {editingProduct ? 'Editar Producto' : 'Nuevo producto'}
                             </Text>
+
                             <TouchableOpacity
-                                style={globalStyles.dangerButton}
+                                style={globalStyles.productsModalCloseButton}
                                 onPress={closeModal}
                             >
-                                <Text style={globalStyles.dangerButtonText}>X</Text>
+                                <Text style={globalStyles.productsModalCancelButton}>X</Text>
                             </TouchableOpacity>
                         </View>
-                        <ScrollView>
-                            <View style={globalStyles.inputContainer}>
-                                <Text style={globalStyles.inputLabel}>Categoría*</Text>
+
+                        <ScrollView
+                            style={{ flex: 1 }} showsVerticalScrollIndicator={true}
+                        >
+                            <Text style={globalStyles.productsFormSectionTitle}>Información Básica</Text>
+
+                            <View style={globalStyles.productsFormGroup}>
+                                <Text style={globalStyles.productsFormLabel}>SKU*</Text>
+                                <TextInput style={globalStyles.productsFormInput} value={formData.sku} onChangeText={(value) => setFormData({ ...formData, name: value })} placeholder="SKU del producto" placeholderTextColor="#999" />
+                            </View>
+
+                            <View style={globalStyles.productsFormGroup}>
+                                <Text style={globalStyles.productsFormLabel}>Nombre*</Text>
+                                <TextInput style={globalStyles.productsFormInput} value={formData.name} onChangeText={(value) => setFormData({ ...formData, name: value })} placeholder="Nombre del producto" placeholderTextColor="#999" />
+                            </View>
+
+                            <Text style={globalStyles.productsFormSectionTitle}>Categorización</Text>
+
+                            <View style={globalStyles.productsFormGroup}>
+                                <Text style={globalStyles.productsFormLabel}>Categoría*</Text>
                                 <View style={[globalStyles.textInput, { paddingHorizontal: 0 }]}>
-                                    <Picker selectedValue={formData.categoryId} onValueChange={(value: string) => setFormData({ ...formData, categoryId: value })} style={{ color: '#333' }}>
+                                    <Picker selectedValue={formData.categoryId} onValueChange={(value: string) => setFormData({
+                                        ...formData,
+                                        categoryId: value
+                                    })} style={{ color: '#333' }}>
                                         <Picker.Item label="Selecciona una categoría" value="" />
                                         {categories.map((category) => (
                                             <Picker.Item key={category._id} label={category.name} value={category._id} />
@@ -517,20 +527,39 @@ const ProductsScreen: React.FC = () => {
                                 </View>
                             </View>
 
-                            <View style={globalStyles.inputContainer}>
-                                <Text style={globalStyles.inputLabel}>Nombre*</Text>
-                                <TextInput style={globalStyles.textInput} value={formData.name} onChangeText={(value) => setFormData({ ...formData, name: value })} placeholder="Nombre de la subcategoría" placeholderTextColor="#999" />
+                            <View style={globalStyles.productsFormGroup}>
+                                <Text style={globalStyles.productsFormLabel}>Subcategoría*</Text>
+                                <View style={[globalStyles.productsFormPickerContainer, filteredSubcategories.length === 0 && globalStyles.productsFormPickerDisabled]}>
+                                    <Picker selectedValue={formData.subcategoryId} onValueChange={(value: string) => setFormData({
+                                        ...formData,
+                                        subcategoryId: value
+                                    })} style={globalStyles.productsFormPicker} enabled={filteredSubcategories.length > 0}>
+                                        <Picker.Item label={filteredSubcategories.length > 0 ? 'Selecciona una subcategoría' : 'Primero selecciona una categoría'} value="" />
+                                        {filteredSubcategories.map((subcategory) => (
+                                            <Picker.Item key={subcategory._id} label={subcategory.name} value={subcategory._id} />
+                                        ))}
+                                    </Picker>
+                                </View>
                             </View>
-                            <View style={globalStyles.inputContainer}>
-                                <Text style={globalStyles.inputLabel}>Descripción*</Text>
-                                <TextInput style={[globalStyles.textInput, { height: 80, textAlignVertical: 'top' }]} value={formData.description} onChangeText={(value) => setFormData({ ...formData, description: value })} placeholder="Descripción de la subcategoría opcional" placeholderTextColor="#999" multiline={true} numberOfLines={3} />
+
+                            <Text style={globalStyles.productsFormSectionTitle}>Precios</Text>
+                            <View style={globalStyles.productsFormGroup}>
+                                <Text style={globalStyles.productsFormLabel}>Precio*</Text>
+                                <TextInput style={globalStyles.productsFormInput} value={formData.price} onChangeText={(value) => setFormData({ ...formData, price: value })} placeholder="0" placeholderTextColor="#999" keyboardType="numeric"/>
                             </View>
-                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 16 }}>
+
+                            <Text style={globalStyles.productsFormSectionTitle}>Inventario</Text>
+                            <View style={globalStyles.productsFormGroup}>
+                                <Text style={globalStyles.productsFormLabel}>Cantidad de Stock*</Text>
+                                <TextInput style={globalStyles.productsFormInput} value={formData.stockQuantity} onChangeText={(value) => setFormData({ ...formData, stockQuantity: value })} placeholder="0" placeholderTextColor="#999" keyboardType="numeric"/>
+                            </View>
+
+                            <View style={globalStyles.productsModalActions}>
                                 <TouchableOpacity
-                                    style={globalStyles.secondaryButton}
+                                    style={globalStyles.productsModalCancelButton}
                                     onPress={closeModal}
                                 >
-                                    <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>
+                                    <Text style={globalStyles.productsModalCancelButtonText}>Cancelar</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={globalStyles.primaryButton}
@@ -543,17 +572,17 @@ const ProductsScreen: React.FC = () => {
                                             size='small'
                                         />
                                     ) : (
-                                        <Text style={globalStyles.primaryButtonText}>
-                                            {editingSubcategory ? 'Actualizar' : 'Crear'}
+                                        <Text style={globalStyles.productsModalSaveButtonText}>
+                                            {editingProduct ? 'Actualizar' : 'Crear'}
                                         </Text>
                                     )}
                                 </TouchableOpacity>
                             </View>
                         </ScrollView>
                     </View>
-                </View>
-            </Modal>
-        </View>
+                </View >
+            )}
+        </View >
     )
 }
 
