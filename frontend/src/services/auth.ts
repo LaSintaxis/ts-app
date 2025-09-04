@@ -86,4 +86,50 @@ class AuthService {
             throw new Error(error.message || 'Error de conexion')
         }
     }
+
+    //cambiar contraseña
+    async changePassword(data: ChangePasswordData):Promise<ApiResponse>{
+        try {
+            const response = await apiService.put('/auth/change-password', data);
+            return response
+        } catch (error: any) {
+            throw new Error(error.message || 'Error cambiando contraseña')
+        }
+    }
+
+    //verificar token en el servidor
+    async verifyToken():Promise<boolean> {
+        try {
+            const response = await apiService.get('/auth/verify');
+            return response.success
+        } catch (error) {
+            return false;
+        }
+    }
+
+    //limpiar datos de autenticacion
+    async clearAuthData(): Promise<void> {
+        await AsyncStorage.multiRemove([this.TOKEN_KEY, this.USER_KEY])
+    }
+
+    //verificar si el usuario tiene un rol especifico
+    async hasRole(role: 'admin' | 'coordinador'): Promise<boolean> {
+        const user = await this.getUser();
+        return user?.role === role
+    }
+
+    ///verificar si el usuario puede eliminar
+    async canDelete(): Promise<boolean> {
+        return this.hasRole('admin')
+    }
+    
+    //verificar si el usuario puede editar
+    async canEdit(): Promise<boolean> {
+        const user = await this.getUser();
+        return user?.role === 'admin' || user?.role === 'coordinador'
+    }
 }
+
+//exportar instancia
+export const authService = new AuthService();
+export default authService

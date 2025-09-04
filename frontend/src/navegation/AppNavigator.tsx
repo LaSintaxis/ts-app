@@ -175,3 +175,5 @@ const AppNavigator: React.FC = () => {
         </NavigationContainer >
     )
 }
+
+export default AppNavigator;
