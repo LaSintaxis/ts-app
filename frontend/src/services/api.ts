@@ -8,7 +8,7 @@ class ApiService {
 
     constructor() {
         // Cambia según si estás en emulador o dispositivo físico
-        this.baseURL = __DEV__ ? 'http://10.0.2.2:5000/api' : 'http://TU_IP_LOCAL:5000/api';
+        this.baseURL = __DEV__ ? 'http://10.0.2.2:5000/api' : 'http:// 0.0.0.0:5000/api';
         
         this.instance = axios.create({
             baseURL: this.baseURL,

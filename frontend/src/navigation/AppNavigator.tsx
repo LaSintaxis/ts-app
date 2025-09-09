@@ -28,7 +28,7 @@ const MainTabNavigator: React.FC = () => {
             screenOptions={{
                 headerShown: false,
                 tabBarActiveTintColor: colors.primary,
-                tabBarInactiveTintColor: colors.textSecundary,
+                tabBarInactiveTintColor: colors.tabInactive,
                 tabBarStyle: {
                     backgroundColor: colors.surface,
                     borderTopColor: colors.border,

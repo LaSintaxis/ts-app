@@ -1,4 +1,4 @@
-const { User } = require('../models/User')
+const  User  = require('../models/User')
 const { asyncHandler } = require('../middlewares/errorHandler');
 
 //obtener los usuarios
@@ -73,7 +73,7 @@ const createUser = asyncHandler(async (req, res) => {
     } = req.body;
 
     //validaciones
-    if (!username || !email || !password || !firstName || lastName || !role) {
+    if (!username || !email || !password || !firstName || !lastName || !role) {
         return res.status(400).json({
             success: false,
             message: 'Todos los campos son obligatorios'
@@ -91,7 +91,7 @@ const createUser = asyncHandler(async (req, res) => {
     }
 
     //crear el usuario
-    const User = await User.create({
+    const newUser = await User.create({
         username,
         email,
         password,
@@ -104,7 +104,7 @@ const createUser = asyncHandler(async (req, res) => {
     })
     res.status(201).json({
         success: true,
-        data: User
+        data: newUser
     })
 })
 //Actualizar un usuario

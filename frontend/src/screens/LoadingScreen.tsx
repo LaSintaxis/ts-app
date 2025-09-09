@@ -9,8 +9,7 @@ const LoadingScreen: React.FC = () => {
         //contenido principal ocupa toda la pantalla
         <View style={globalStyles.loadingScreenContainer}>
             <View style={globalStyles.loadingContent}>
-                <Text style={globalStyles.appLogo}>Logo</Text>
-                <Text style={globalStyles.appName}>Mi app</Text>
+                <Text style={globalStyles.appName}>Gestión de productos</Text>
                 <Text style={globalStyles.appSubtitle}>Sistema de gestión</Text>
                 <View style={globalStyles.loadingIndicatorText}>
                     <ActivityIndicator

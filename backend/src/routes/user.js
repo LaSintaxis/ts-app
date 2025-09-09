@@ -31,7 +31,7 @@ router.get('/stats', verifyAdmin, getUserStats)
 router.get('/', verifyAdmin, getUsers)
 
 //usuario por id
-router.get('/id', validateObjectId('id'), verifyAdminOrOwner, getUserById)
+router.get('/:id', validateObjectId('id'), verifyAdminOrOwner, getUserById)
 
 //crear usuario
 router.post('/', verifyAdmin, createUser)

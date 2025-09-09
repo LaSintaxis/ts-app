@@ -13,7 +13,7 @@ const productRoutes = require('./product')
 
 //cada modulo tiene su propio espacio de nombre en la url
 router.use('/auth', authRoutes)
-router.use('/user', userRoutes)
+router.use('/users', userRoutes)
 router.use('/categories', categoryRoutes)
 router.use('/subcategories', subcategoryRoutes)
 router.use('/products', productRoutes)
