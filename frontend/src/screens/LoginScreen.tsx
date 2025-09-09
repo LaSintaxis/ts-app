@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  Alert, 
+  KeyboardAvoidingView, 
+  Platform, 
+  ScrollView, 
+  ActivityIndicator 
+} from 'react-native';
 import { useAuth } from '../contexts/AuthContext'
 import { LoginCredentials } from '../types'
 import { globalStyles, colors } from '../styles';
@@ -14,88 +24,122 @@ const LoginScreen: React.FC = () => {
     });
     //estado de visibilidad de contraseña
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    //funcion para manejar cambios en los campos
+
+    //funcion para manejar cambios en los campos (sin trim aquí)
     const handleInputChange = (field: keyof LoginCredentials, value: string) => {
         setCredentials((prev) => ({
             ...prev,
-            [field]: value.trim()
+            [field]: value
         }))
     }
+
     //funcion para validar formulario
-    const validateForm = (): boolean => {
-        if (!credentials.email) {
+    const validateForm = (cleaned: LoginCredentials): boolean => {
+        if (!cleaned.email) {
             Alert.alert('Error', 'Por favor ingresa tu email o username');
             return false;
         }
 
-        //validar que la contraseña no este vacia
-        if (!credentials.password) {
-            Alert.alert('Error', 'pro favor ingresa tu contraseña');
+        if (!cleaned.password) {
+            Alert.alert('Error', 'Por favor ingresa tu contraseña');
             return false
         }
-        //validar permitir email o username
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // corrige el regex
-        const isEmail = emailRegex.test(credentials.email);
-        const isUsername = credentials.email.length >= 3; // mínimo 3 caracteres para username
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isEmail = emailRegex.test(cleaned.email);
+        const isUsername = cleaned.email.length >= 3; 
 
         if (!isEmail && !isUsername) {
-            Alert.alert('Error', 'Por favor ingresa un email valido o username (mínimo 3 caracteres)');
+            Alert.alert('Error', 'Por favor ingresa un email válido o username (mínimo 3 caracteres)');
             return false;
         }
 
         return true;
     }
+
     const handleLogin = async () => {
-        if (!validateForm()) return;
+        // limpiamos solo antes de enviar
+        const cleanedCredentials = {
+            email: credentials.email.trim(),
+            password: credentials.password
+        };
+
+        if (!validateForm(cleanedCredentials)) return;
+
         try {
-           const response = await login(credentials);
+            const response = await login(cleanedCredentials);
 
             if (response.success) {
-                Alert.alert('Exito', response.message || '¡Bienvenido!')
+                Alert.alert('Éxito', response.message || '¡Bienvenido!')
             } else {
                 Alert.alert('Error', response.message || 'Error en el login')
             }
         } catch (error: any) {
             Alert.alert(
-                'Error de conexion',
+                'Error de conexión',
                 error.message || 'No se pudo conectar con el servidor'
             )
         }
     }
+
     return (
         <KeyboardAvoidingView
-            style={globalStyles.loginContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={globalStyles.loginContainer} 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <ScrollView
                 contentContainerStyle={globalStyles.loginScrollContainer}
                 keyboardShouldPersistTaps='handled'
             >
                 <View style={globalStyles.loginLogoContainer}>
-                    <Text style={globalStyles.loginLogoText}>Logo</Text>
-                    <Text style={globalStyles.loginLogoText}>Logo</Text>
-                    <Text style={globalStyles.loginLogoText}>Mi app</Text>
-                    <Text style={globalStyles.loginLogoText}>Logo</Text>
+                    <Text style={globalStyles.loginAppTitle}>Bienvenid@ al sistema</Text>
                 </View>
+
                 <View style={globalStyles.loginFormContainer}>
                     <Text style={globalStyles.loginFormTitle}>Iniciar Sesión</Text>
-                </View>
-                <View style={globalStyles.inputContainer}>
-                    <Text style={globalStyles.inputLabel}>Email o username</Text>
-                    <TextInput style={globalStyles.textInput} value={credentials.email} onChangeText={(value: string) => handleInputChange('email', value)} placeholder="admin o admin@ejemplo.com" placeholderTextColor="#999" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} editable={!isLoading} />
-                </View>
-                <View style={globalStyles.inputContainer}>
-                    <Text style={globalStyles.inputLabel}>Contraseña</Text>
-                    <View style={globalStyles.loginPasswordContainer}>
-                        <TextInput style={globalStyles.textInput} value={credentials.password} onChangeText={(value: string) => handleInputChange('password', value)} placeholder="Tu contraseña" placeholderTextColor="#999" secureTextEntry={!isPasswordVisible} autoCapitalize="none" autoCorrect={false} editable={!isLoading} />
-                        <TouchableOpacity
-                            style={globalStyles.loginEyeButton} onPress={() => setIsPasswordVisible(!isPasswordVisible)} disabled={isLoading}
-                        >
-                            <Text style={globalStyles.loginEyeButtonText}>
-                                {isPasswordVisible ? 'Ocultar' : 'Mostrar'}
-                            </Text>
-                        </TouchableOpacity>
+
+                    <View style={globalStyles.inputContainer}>
+                        <Text style={globalStyles.inputLabel}>Email o username</Text>
+                        <TextInput 
+                            style={globalStyles.textInput} 
+                            value={credentials.email} 
+                            onChangeText={(value: string) => handleInputChange('email', value)} 
+                            placeholder="admin o admin@ejemplo.com" 
+                            placeholderTextColor="#999" 
+                            keyboardType="email-address" 
+                            autoCapitalize="none" 
+                            autoCorrect={false} 
+                            editable={!isLoading} 
+                        />
+                    </View>
+
+                    <View style={globalStyles.inputContainer}>
+                        <Text style={globalStyles.inputLabel}>Contraseña</Text>
+                        <View style={globalStyles.loginPasswordContainer}>
+                            <TextInput 
+                                style={globalStyles.textInput} 
+                                value={credentials.password} 
+                                onChangeText={(value: string) => handleInputChange('password', value)} 
+                                placeholder="Tu contraseña" 
+                                placeholderTextColor="#999" 
+                                secureTextEntry={!isPasswordVisible} 
+                                autoCapitalize="none" 
+                                autoCorrect={false} 
+                                editable={!isLoading} 
+                            />
+                            <TouchableOpacity
+                                style={globalStyles.loginEyeButton} 
+                                onPress={() => setIsPasswordVisible(!isPasswordVisible)} 
+                                disabled={isLoading}
+                            >
+                                <Text style={globalStyles.loginEyeButtonText}>
+                                    {isPasswordVisible ? 'Ocultar' : 'Mostrar'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
+
                 <TouchableOpacity
                     style={[
                         globalStyles.loginButton,
@@ -110,13 +154,19 @@ const LoginScreen: React.FC = () => {
                         <Text style={globalStyles.loginButtonText}>Ingresar</Text>
                     )}
                 </TouchableOpacity>
+
                 <View style={globalStyles.loginInfoContainer}>
                     <Text style={globalStyles.loginInfoText}>Usa las credenciales del sistema</Text>
                 </View>
+
                 {/**Provisional mientras el desarrollo */}
-                <Text style={globalStyles.loginDemoText}>Admin: Admin / admin123{'/n'} Coordinador: coordinador / coordi123</Text>
+                <Text style={globalStyles.loginDemoText}>
+                    Admin: Admin / admin123{'\n'} 
+                    Coordinador: coordinador / coordi123
+                </Text>
             </ScrollView>
         </KeyboardAvoidingView>
     )
 }
+
 export default LoginScreen;
