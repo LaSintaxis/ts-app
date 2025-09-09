@@ -13,7 +13,7 @@ const LoginScreen: React.FC = () => {
         password: '',
     });
     //estado de visibilidad de contraseña
-    const [isPasswordVisible, setIsPassworddVisible] = useState(false);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     //funcion para manejar cambios en los campos
     const handleInputChange = (field: keyof LoginCredentials, value: string) => {
         setCredentials((prev) => ({
@@ -34,19 +34,22 @@ const LoginScreen: React.FC = () => {
             return false
         }
         //validar permitir email o username
-        const emailRegex = /^[^\s@]+@[^\s@]+\[^\s@]+$/;
-        const isEmail = emailRegex.test(credentials.email) && credentials.email.includes('@');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // corrige el regex
+        const isEmail = emailRegex.test(credentials.email);
+        const isUsername = credentials.email.length >= 3; // mínimo 3 caracteres para username
 
         if (!isEmail && !isUsername) {
-            Alert.alert('Error', 'Por favor ingresa un email valido o username (minimo 3 caracteres)');
+            Alert.alert('Error', 'Por favor ingresa un email valido o username (mínimo 3 caracteres)');
             return false;
         }
+
         return true;
     }
     const handleLogin = async () => {
         if (!validateForm()) return;
         try {
-            const response = await LoginCredentials(credentials);
+           const response = await login(credentials);
+
             if (response.success) {
                 Alert.alert('Exito', response.message || '¡Bienvenido!')
             } else {
@@ -61,7 +64,7 @@ const LoginScreen: React.FC = () => {
     }
     return (
         <KeyboardAvoidingView
-            style={globalStyles.loginContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'heigth'}
+            style={globalStyles.loginContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <ScrollView
                 contentContainerStyle={globalStyles.loginScrollContainer}
@@ -85,7 +88,7 @@ const LoginScreen: React.FC = () => {
                     <View style={globalStyles.loginPasswordContainer}>
                         <TextInput style={globalStyles.textInput} value={credentials.password} onChangeText={(value: string) => handleInputChange('password', value)} placeholder="Tu contraseña" placeholderTextColor="#999" secureTextEntry={!isPasswordVisible} autoCapitalize="none" autoCorrect={false} editable={!isLoading} />
                         <TouchableOpacity
-                            style={globalStyles.loginEyeButton} onPress={() => setIsPassworddVisible(!isPasswordVisible)} disabled={isLoading}
+                            style={globalStyles.loginEyeButton} onPress={() => setIsPasswordVisible(!isPasswordVisible)} disabled={isLoading}
                         >
                             <Text style={globalStyles.loginEyeButtonText}>
                                 {isPasswordVisible ? 'Ocultar' : 'Mostrar'}
@@ -102,8 +105,8 @@ const LoginScreen: React.FC = () => {
                     disabled={isLoading}
                 >
                     {isLoading ? (
-                        <ActivityIndicator color='#fff' size='small'/>
-                    ):(
+                        <ActivityIndicator color='#fff' size='small' />
+                    ) : (
                         <Text style={globalStyles.loginButtonText}>Ingresar</Text>
                     )}
                 </TouchableOpacity>

@@ -1,157 +1,156 @@
-import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ApiResponse } from '../types';
 
 class ApiService {
     private instance: AxiosInstance;
-    private baseURL: string = 'https://0.0.0.0:5000/api'; //IP publica del backend
+    private baseURL: string;
 
     constructor() {
+        // Cambia según si estás en emulador o dispositivo físico
+        this.baseURL = __DEV__ ? 'http://10.0.2.2:5000/api' : 'http://TU_IP_LOCAL:5000/api';
+        
         this.instance = axios.create({
             baseURL: this.baseURL,
             timeout: 10000,
             headers: {
-                "Content-Type": 'application/json'
-            }
-        })
+                'Content-Type': 'application/json',
+            },
+        });
+
         this.setupInterceptors();
     }
 
     private setupInterceptors() {
+        // Request
         this.instance.interceptors.request.use(
             async (config) => {
-                if (__DEV__) {
-                    console.log('[services/api.ts] Debug - enviando petición a: ', (config.baseURL || '') + (config.url || ''));
-                    console.log('[services/api.ts] Debug')
-                }
                 try {
-                    const token = await AsyncStorage.getItem("token");
-                    if(token && config.headers) {
-                        config.headers.Authorization = `Bearer ${token}`
+                    const token = await AsyncStorage.getItem('token');
+                    if (token && config.headers) {
+                        config.headers.Authorization = `Bearer ${token}`;
                     }
-                }catch (error) {
                     if (__DEV__) {
-                        console.log( '[services/api.ts] Error obteniendo token: ',error)
+                        console.log('[API] Request:', (config.baseURL || '') + (config.url || ''));
+                        console.log('[API] Data:', config.data || config.params || {});
                     }
+                } catch (error) {
+                    if (__DEV__) console.log('[API] Error obteniendo token:', error);
                 }
                 return config;
             },
-            (error) => {
-                if(__DEV__) {
-                    console.log('[services/api.ts] Error en la interacción request: ', error)
-                }
-                return Promise.reject(error)
-            }
+            (error) => Promise.reject(error)
         );
+
+        // Response
         this.instance.interceptors.response.use(
             (response: AxiosResponse) => {
-                if (__DEV__) {
-                    console.log('[services/api.ts] Respuesta recibida', response.status, response.data)
-                }
-                return response
+                if (__DEV__) console.log('[API] Response:', response.status, response.data);
+                return response;
             },
             async (error) => {
-                if (__DEV__) {
-                    console.log('[services/api.ts] Error en respuesta: ', error.response?.status, error.response?.data || error.message)
-                }
+                if (__DEV__) console.log('[API] Error response:', error.response?.status, error.response?.data || error.message);
+
                 if (error.response?.status === 401) {
-                    await AsyncStorage.multiRemove(['token' , 'user'])
+                    await AsyncStorage.multiRemove(['token', 'user']);
+                    // Aquí puedes redirigir a login si quieres
                 }
-                return Promise.reject(error)
+
+                return Promise.reject(this.handleError(error));
             }
-        )
+        );
     }
 
-    //metodo generico para peticiones GET
+    // GET
     async get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
         try {
             const response = await this.instance.get(endpoint, config);
             return response.data;
-        } catch (error: any) {
+        } catch (error) {
             throw this.handleError(error);
         }
     }
 
-    //metodo generico para peticiones post
-    async post<T>(endpoint: string, data: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    // POST
+    async post<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
         try {
             const response = await this.instance.post(endpoint, data, config);
             return response.data;
-        } catch (error: any) {
+        } catch (error) {
             throw this.handleError(error);
         }
     }
 
-    //metodo generico para peticiones put
-    async put<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    // PUT
+    async put<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
         try {
-            const response = await this.instance.put(endpoint, config);
+            const response = await this.instance.put(endpoint, data, config);
             return response.data;
-        } catch (error: any) {
+        } catch (error) {
             throw this.handleError(error);
         }
     }
 
-    //metodo generico para peticiones delete
+    // PATCH
+    async patch<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+        try {
+            const response = await this.instance.patch(endpoint, data, config);
+            return response.data;
+        } catch (error) {
+            throw this.handleError(error);
+        }
+    }
+
+    // DELETE
     async delete<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
         try {
             const response = await this.instance.delete(endpoint, config);
             return response.data;
-        } catch (error: any) {
+        } catch (error) {
             throw this.handleError(error);
         }
     }
 
-    //metodo generico para peticiones patch
-    async patch<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-        try {
-            const response = await this.instance.patch(endpoint, config);
-            return response.data;
-        } catch (error: any) {
-            throw this.handleError(error);
-        }
-    }
-
-    //manejo de errores
+    // Manejo de errores
     private handleError(error: any) {
         let errorInfo;
         if (error.response) {
-            const {status, data} = error.message;
+            const { status, data } = error.response;
             errorInfo = {
                 success: false,
-                message: data.message || `Error ${status}`,
-                errors: data.errors || [],
-                status
-            }
+                message: data?.message || `Error ${status}`,
+                errors: data?.errors || [],
+                status,
+            };
         } else if (error.request) {
             errorInfo = {
                 success: false,
-                message: 'Sin conexion al servidor. Verifica tu conexion a internet',
-                errors: ['NETWORK_ERROR']
-            }
+                message: 'Sin conexión al servidor. Verifica tu conexión a internet',
+                errors: ['NETWORK_ERROR'],
+            };
         } else {
             errorInfo = {
                 success: false,
                 message: error.message || 'Error desconocido',
-                errors: ['UNKNOWN_ERROR']
-            }
+                errors: ['UNKNOWN_ERROR'],
+            };
         }
-        //crea un error personalizado con la información recolectada
+
         const customError = new Error(errorInfo.message);
-        (customError as any).success = errorInfo.success
-        (customError as any).errors = errorInfo.errors
-        (customError as any).status = errorInfo.status
+        (customError as any).success = errorInfo.success;
+        (customError as any).errors = errorInfo.errors;
+        (customError as any).status = errorInfo.status;
 
-        return customError
+        return customError;
     }
 
-    //metodo para cambiar la base de url
-    setIntance(url: string){
+    // Cambiar base URL en tiempo de ejecución
+    setInstance(url: string) {
         this.baseURL = url;
-        this.instance.defaults.baseURL = url
+        this.instance.defaults.baseURL = url;
     }
 
-    //metodo para obtener la instancia de axios
+    // Obtener instancia directa de Axios
     getInstance(): AxiosInstance {
         return this.instance;
     }
