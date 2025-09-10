@@ -92,7 +92,7 @@ const LoginScreen: React.FC = () => {
                 keyboardShouldPersistTaps='handled'
             >
                 <View style={globalStyles.loginLogoContainer}>
-                    <Text style={globalStyles.loginAppTitle}>Bienvenid@ al sistema</Text>
+                    <Text style={globalStyles.loginAppTitle}>Bienvenideee al sistema</Text>
                 </View>
 
                 <View style={globalStyles.loginFormContainer}>
@@ -162,7 +162,7 @@ const LoginScreen: React.FC = () => {
                 {/**Provisional mientras el desarrollo */}
                 <Text style={globalStyles.loginDemoText}>
                     Admin: Admin / admin123{'\n'} 
-                    Coordinador: coordinador / coordi123
+                    Coordinador: coordinador / coord123
                 </Text>
             </ScrollView>
         </KeyboardAvoidingView>

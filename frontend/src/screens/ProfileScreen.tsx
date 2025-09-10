@@ -1,6 +1,5 @@
 // Esta pantalla permite al usuario ver y gestionar su información personal
 
-// 📚 IMPORTACIONES DE REACT Y REACT NATIVE
 import React from 'react';
 import {
   View,           
@@ -10,13 +9,11 @@ import {
   Alert,          
 } from 'react-native';
 
-// 📚 IMPORTACIONES DE CONTEXTOS Y ESTILOS
 import { useAuth } from '../contexts/AuthContext';      
 import { globalStyles, colors } from '../styles';      
 
 
 const ProfileScreen: React.FC = () => {
-  // 🔐 OBTENER DATOS DEL USUARIO AUTENTICADO
   const { user, logout } = useAuth(); 
 
 
@@ -36,12 +33,10 @@ const ProfileScreen: React.FC = () => {
     );
   };
 
-  // 🔑 FUNCIÓN PARA CAMBIAR CONTRASEÑA (EN DESARROLLO)
   const handleChangePassword = () => {
     Alert.alert('Cambiar Contraseña', 'Función en desarrollo');
   };
 
-  // ✏️ FUNCIÓN PARA EDITAR PERFIL (EN DESARROLLO)
   const handleEditProfile = () => {
     Alert.alert('Editar Perfil', 'Función en desarrollo');
   };
@@ -62,7 +57,7 @@ const ProfileScreen: React.FC = () => {
         
         {/*INFORMACIÓN DEL USUARIO */}
         <View style={globalStyles.profileUserInfo}>
-          <Text style={globalStyles.profileUserName}>{user?.email || 'Usuario'}</Text>
+          <Text style={globalStyles.profileUserName}>{user?.username || 'Usuario'}</Text>
           <Text style={globalStyles.profileUserEmail}>{user?.email}</Text>
           
           {/* ETIQUETA DE ROL DEL USUARIO */}

@@ -124,7 +124,7 @@ const HomeScreen: React.FC = () => {
             <View style={globalStyles.homeHeader}>
                 <View>
                     <Text style={globalStyles.userWelcomeText}>¡Hola</Text>
-                    <Text style={globalStyles.userName}>{user?.email || 'Usuario'}</Text>
+                    <Text style={globalStyles.userName}>{user?.username || 'Usuario'}</Text>
                     <Text style={globalStyles.userRole}>{user?.role === 'admin' ? 'Administrador' : 'Coordinador'}</Text>
                 </View>
                 <TouchableOpacity style={globalStyles.logoutButton} onPress={handleLogout}>
